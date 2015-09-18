@@ -1,0 +1,11 @@
+
+[string]$mac = '00:00:00:00:00:00' #address of the network card (MAC address) 
+
+$string=@($mac.split(":""-") | foreach {$_.insert(0,"0x")}) 
+$target = [byte[]]($string[0], $string[1], $string[2], $string[3], $string[4], $string[5]) 
+$packet = [byte[]](,0xFF * 102) 
+6..101 |% { $packet[$_] = $target[($_%6)]} 
+
+$UDPclient = new-Object System.Net.Sockets.UdpClient 
+$UDPclient.Connect(([System.Net.IPAddress]::Broadcast),4000) 
+$UDPclient.Send($packet, $packet.Length) | out-null
