@@ -1,0 +1,55 @@
+
+dim objPing  
+dim objStatus  
+dim strComputer
+dim tempoEspera
+tempoEspera = 1
+dim tempoEsperaI
+tempoEsperaI = 10
+ 
+'The below creates an object of an OU from your AD server. You start with the fqn of the DC server you want to connect to.
+'Next you put in the name of the ou you want to get, then work your way up to the root. You then finish with your domain name.
+ 
+Set ou = GetObject("LDAP://servername.domain.com/OU=teste,DC=domainName,DC=com,DC=br")
+ 
+'We then loop through the object and pass each computer the shutdown function.
+For Each obj in ou
+ 
+If obj.class = "computer" Then
+    name = mid(obj.Name,4)
+	
+	If name = "NAMEOFCOMPUTER" Then
+		Shutdown(name),(tempoEspera)
+	End If
+	
+	If name = "NAMEOFCOMPUTER" Then
+		Shutdown(name),(tempoEsperaI)
+	End If
+	
+End If
+
+Next   
+ 
+'You can add as many ou objects as you need to the script by copying and altering the above.
+ 
+' The function pings the computer, if it gets a reply it will then run the shutdown command through a shell 
+
+Function Shutdown(strComp,strTempo)  
+Set objPing = GetObject("winmgmts:{impersonationLevel=impersonate}")._  
+ExecQuery("select Replysize from Win32_PingStatus where address = '" & strComp & "'")
+ 
+For Each objStatus in objPing  
+ If  IsNull(objStatus.ReplySize) Then 
+  'WScript.Echo Serv&" is offline"  
+   
+ Else 
+  'WScript.Echo Serv&" is online"  
+    strShutdown = "shutdown.exe -r -c ""Your computer will be closing down, please save your work"" -t " & strTempo & " -m \\" & strComp
+ 
+    set objShell = CreateObject("WScript.Shell")
+ 
+    objShell.Run strShutdown
+	
+ End If 
+Next
+End Function
